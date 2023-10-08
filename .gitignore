@@ -3,3 +3,11 @@
 *egg*
 *json*
 *build*
+.gdvenv/
+outputs/
+experiments/
+data/
+logs/
+data_splits/
+.gdvenv
+tier3/
