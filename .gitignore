@@ -11,3 +11,4 @@ logs/
 data_splits/
 .gdvenv
 tier3/
+env/
