@@ -12,8 +12,10 @@ from mmseg.datasets.builder import PIPELINES
 from torchvision import transforms
 
 
+from PIL import Image
+
 def open_tiff(fname):
-    data = imread(fname)
+    data = np.array(Image.open(fname))
     return data
 
 
@@ -281,7 +283,8 @@ class LoadGeospatialImageFromFile(object):
             filename = osp.join(results["img_prefix"], results["img_info"]["filename"])
         else:
             filename = results["img_info"]["filename"]
-        img = open_tiff(filename)
+        img = open_tiff(filename).transpose((2, 0, 1))
+        # print(f"{img.shape=}")
 
         if not self.channels_last:
             img = np.transpose(img, (1, 2, 0))

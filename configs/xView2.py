@@ -1,6 +1,6 @@
 import os
-# base options
 
+# base options
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
 load_from = None
@@ -13,35 +13,36 @@ custom_imports = dict(imports=["geospatial_fm"])
 ### Configs
 # Data
 # TO BE DEFINED BY USER: Data root to sen1floods11 downloaded dataset
-data_root = "/fdata/home/m.piorczynsk/nasa-space-apps/hls-foundation-os/data/sen1floods/"
+data_root = "/fdata/home/m.piorczynsk/nasa-space-apps/hls-foundation-os/data/"
 
 dataset_type = "GeospatialDataset"
-num_classes = 2
+num_classes=5
 num_frames = 1
-img_size = 224
+img_size = 256
 num_workers = 2
 samples_per_gpu = 4
 
-CLASSES=(0,1)
+CLASSES=(0,1, 2, 3, 4)
 
-img_norm_cfg = dict(means=[0.14245495, 0.13921481, 0.12434631, 0.31420089, 0.20743526,0.12046503],
-                    stds=[0.04036231, 0.04186983, 0.05267646, 0.0822221 , 0.06834774, 0.05294205])
-
-bands = [1, 2, 3, 8, 11, 12]
+img_norm_cfg = dict(means=[0.14245495, 0.13921481, 0.12434631],
+                    stds=[0.04036231, 0.04186983, 0.05267646])
+bands = None
 tile_size = img_size
 orig_nsize = 512
 crop_size = (tile_size, tile_size)
 
-img_dir = data_root + "v1.1/data/flood_events/HandLabeled/S2Hand"
-ann_dir = data_root + "v1.1/data/flood_events/HandLabeled/LabelHand"
-img_suffix = f"_S2Hand.tif"
-seg_map_suffix = f"_LabelHand.tif"
+img_dir = data_root + "xView2/all/images"
+ann_dir = data_root + "xView2/all/targets"
+img_suffix = ".png"
+seg_map_suffix = "_target.png"
 
 splits = {
-    "train": "data_splits/sen1floods11/train_split.txt",
-    "val": "data_splits/sen1floods11/val_split.txt",
-    "test": "data_splits/sen1floods11/test_split.txt",
+    "train": "data_splits/xView2/train_split.txt",
+    "val": "data_splits/xView2/val_split.txt",
+    "test": "data_splits/xView2/test_split.txt",
 }
+
+
 splits = {k: os.path.abspath(v) for (k, v) in splits.items()}
 
 ignore_index = 2
@@ -52,21 +53,21 @@ constant = 0.0001
 
 # Model
 # TO BE DEFINED BY USER: path to pretrained backbone weights
-pretrained_weights_path = "checkpoints/Prithvi-100M-sen1floods11/sen1floods11_Prithvi_100M.pth"
+pretrained_weights_path = "checkpoints/Prithvi-100M/Prithvi_100M.pt"
 num_layers = 12
 patch_size = 16
 embed_dim = 768
 num_heads = 12
 tubelet_size = 1
 
-
-epochs=100
-eval_epoch_interval = 5
+# TRAINING
+epochs=50
+eval_epoch_interval = 10
 
 # TO BE DEFINED BY USER: Save directory
-dataset = "sen1floods"
+dataset = "xView2"
 experiment = f"experiments/{dataset}/"
-project_dir = os.environ['ROOT']
+project_dir =  "/fdata/home/m.piorczynsk/nasa-space-apps/hls-foundation-os/"
 work_dir = os.path.join(project_dir, experiment)
 save_path = work_dir
 
@@ -96,7 +97,7 @@ train_pipeline = [
     dict(
         type="Reshape",
         keys=["img"],
-        new_shape=(len(bands), num_frames, tile_size, tile_size),
+        new_shape=(3, num_frames, tile_size, tile_size),
     ),
     dict(type="Reshape", keys=["gt_semantic_seg"], new_shape=(1, tile_size, tile_size)),
     dict(type="CastTensor", keys=["gt_semantic_seg"], new_type="torch.LongTensor"),
@@ -121,7 +122,7 @@ test_pipeline = [
     dict(
         type="Reshape",
         keys=["img"],
-        new_shape=(len(bands), num_frames, -1, -1),
+        new_shape=(3, num_frames, -1, -1),
         look_up={'2': 1, '3': 2}
     ),
     dict(type="CastTensor", keys=["img"], new_type="torch.FloatTensor"),
@@ -190,12 +191,12 @@ data = dict(
 )
 
 # Training
-optimizer = dict(type="Adam", lr=6e-5, weight_decay=0.05)
+optimizer = dict(type="AdamW", lr=1e-5, weight_decay=0.05, betas=(0.9, 0.999),)
 optimizer_config = dict(grad_clip=None)
 lr_config = dict(
     policy="poly",
     warmup="linear",
-    warmup_iters=1500,
+    warmup_iters=100,
     warmup_ratio=1e-6,
     power=1.0,
     min_lr=0.0,
@@ -205,28 +206,26 @@ lr_config = dict(
 log_config = dict(
     interval=10,
     hooks=[
-        dict(type="TextLoggerHook", by_epoch=True),
-        dict(type="TensorboardLoggerHook", by_epoch=True),
-    ],
+        dict(type='TextLoggerHook', by_epoch=True),
+        dict(type='TensorboardLoggerHook', by_epoch=True),
+    ])
+
+checkpoint_config = dict(
+    by_epoch=True, interval=1, out_dir=save_path 
 )
 
-checkpoint_config = dict(by_epoch=True, interval=10, out_dir=save_path)
-
 evaluation = dict(
-    interval=eval_epoch_interval,
-    metric="mIoU",
-    pre_eval=True,
-    save_best="mIoU",
-    by_epoch=True,
+    interval=eval_epoch_interval, metric="mIoU", pre_eval=True, save_best="mIoU", by_epoch=True
 )
 
 runner = dict(type="EpochBasedRunner", max_epochs=epochs)
 
-workflow = [("train", 1), ("val", 1)]
+workflow = [("train", 1),("val", 1)]
 
 norm_cfg = dict(type="BN", requires_grad=True)
 
-ce_weights = [0.3, 0.7]
+ce_weights = [0.01652893, 0.12396694, 0.19834711, 0.16528926, 0.49586777]
+# ce_weights = None
 
 model = dict(
     type="TemporalEncoderDecoder",
@@ -238,7 +237,7 @@ model = dict(
         patch_size=patch_size,
         num_frames=num_frames,
         tubelet_size=1,
-        in_chans=len(bands),
+        in_chans=3,
         embed_dim=embed_dim,
         depth=num_layers,
         num_heads=num_heads,
@@ -247,7 +246,7 @@ model = dict(
     ),
     neck=dict(
         type="ConvTransformerTokensToEmbeddingNeck",
-        embed_dim=num_frames * embed_dim,
+        embed_dim=num_frames*embed_dim,
         output_embed_dim=embed_dim,
         drop_cls_token=True,
         Hp=img_size // patch_size,
@@ -262,7 +261,7 @@ model = dict(
         channels=256,
         num_convs=1,
         concat_input=False,
-        dropout_ratio=0.1,
+        dropout_ratio=0.4,
         norm_cfg=norm_cfg,
         align_corners=False,
         loss_decode=dict(
@@ -270,6 +269,7 @@ model = dict(
             use_sigmoid=False,
             loss_weight=1,
             class_weight=ce_weights,
+            avg_non_ignore=True
         ),
     ),
     auxiliary_head=dict(
@@ -281,7 +281,7 @@ model = dict(
         channels=256,
         num_convs=2,
         concat_input=False,
-        dropout_ratio=0.1,
+        dropout_ratio=0.4,
         norm_cfg=norm_cfg,
         align_corners=False,
         loss_decode=dict(
@@ -289,12 +289,9 @@ model = dict(
             use_sigmoid=False,
             loss_weight=1,
             class_weight=ce_weights,
+            avg_non_ignore=True
         ),
     ),
     train_cfg=dict(),
-    test_cfg=dict(
-        mode="slide",
-        stride=(int(tile_size / 2), int(tile_size / 2)),
-        crop_size=(tile_size, tile_size),
-    ),
+    test_cfg=dict(mode="slide", stride=(int(tile_size/2), int(tile_size/2)), crop_size=(tile_size, tile_size)),
 )
