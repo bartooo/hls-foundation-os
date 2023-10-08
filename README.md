@@ -2,6 +2,15 @@
 
 Natural disasters provide many challenges to governments and rescue services. We propose AI based tool that help to provide humanitarian assistance & disaster recovery. Currently this is done manually or with an AI to a very limited extend.
 
+
+## App presentation
+
+Video showing interactive map:
+[YT Map]https://www.youtube.com/watch?v=cTFNQqVkTFE&ab_channel=MrQba33
+
+Web app example view:
+<img width="1679" alt="Screenshot_2023-10-08_at_9 40 19_AM" src="https://github.com/bartooo/hls-foundation-os/assets/73389492/59ede1aa-7fb5-41f6-983c-ca174e399cae">
+
 ## The approach
 ### Background
 To finetune for these tasks in this repository, we make use of [MMSegmentation](https://mmsegmentation.readthedocs.io/en/0.x/), which provides an extensible framework for segmentation tasks. 
