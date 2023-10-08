@@ -1,7 +1,10 @@
 # Real time natural disaster assessment using AI
 
-Natural disasters provide many challenges to governments and rescue services. We propose AI based tool that help to provide humanitarian assistance & disaster recovery. Currently this is done manually or with an AI to a very limited extend.
+We have used a pre-trained machine learning model provided by a joint collaboration between NASA and IBM, fine-tuned it to our specific use case and built an application on top of it that aids governments and rescue services in disaster assessment and recovery. Our app is capable of detecting floods, damaged homes and grading the destruction level of houses. Additionally, it also can find passable roads in emergency situations, thus reducing wait time for rescue. We have utilized Python programming language and Pytorch – a machine learning framework.
 
+## inspiration
+
+Our motivation and inspiration is described [HERE](https://github.com/bartooo/hls-foundation-os/blob/main/docs/inspiration.pdf)
 
 ## App presentation
 
@@ -23,7 +26,7 @@ The pretrained model we work with is a [ViT](https://arxiv.org/abs/2010.11929) o
 ### The architectures
 We use a simple architecture that adds a neck and segmentation head to the backbone. The neck concatenates and processes the transformer's token based embeddings into an embedding that can be fed into convolutional layers. The head processes this embedding into a segmentation mask. The code for the architecture can be found in [this file](<./ML Model/geospatial_fm/geospatial_fm.py>).
 
-## Setup
+## Model Setup
 ### Dependencies
 1. Clone this repository
 2. `conda create -n <environment-name> python==3.9`
@@ -59,3 +62,9 @@ python model_inference.py -config /path/to/config/config.py -ckpt /path/to/check
 ```
 
 The `bands` parameter is useful in case the files used to run inference have the data in different orders/indexes than the original dataset.
+
+
+## Resources and research
+
+[Notes](https://github.com/bartooo/hls-foundation-os/blob/main/docs/resources_and_research.pdf)
+
