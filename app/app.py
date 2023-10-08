@@ -1,43 +1,47 @@
-# import folium
-# import pandas as pd
-
-
-# m = folium.Map(location=(49.25, -123.12), tiles="cartodb positron")
-
-# location = "https://data.smartdublin.ie/dataset/33ec9fe2-4957-4e9a-ab55-c5e917c7a9ab/resource/2dec86ed-76ed-47a3-ae28-646db5c5b965/download/dublin.csv"
-# bike_station_locations = pd.read_csv(location)
-
-# bike_station_locations = bike_station_locations[["Latitude", "Longitude", "Name"]]
-
-
-# map = folium.Map(
-#     location=[bike_station_locations.Latitude.mean(), bike_station_locations.Longitude.mean()],
-#     zoom_start=14,
-#     control_scale=True
-# )
-
-# for index, location_info in bike_station_locations.iterrows():
-#     folium.Marker([location_info["Latitude"], location_info["Longitude"]], popup=location_info["Name"]).add_to(map)
-
-# map
-# map.save("footprint.html")
-
-
 import streamlit as st
-import pandas as pd
-import folium
-from streamlit_folium import st_folium
+from PIL import Image
+
+st.set_page_config(layout="wide")
 
 
-APP_TITLE = 'PIWO PIWO PIWO PIWO'
-APP_SUB_TITLE = 'GOLEM GUROM'
+# Ścieżka do wybranego zdjęcia
+image_path = "app/predictions.png"  # Zmień na ścieżkę do swojego zdjęcia
 
 
-def main():
-    st.set_page_config(APP_TITLE)
-    st.title(APP_TITLE)
-    st.caption(APP_SUB_TITLE)
+properties = {
+    "Water Coverage": "38% of image",  # Przykładowa wartość "Water Coverage"
+    "Building Non-Flooded": "27 areas",  # Przykładowa wartość "Building Non-Flooded"
+    "Building Flooded": "42 areas",  # Przykładowa wartość "Building Flooded"
+    "Road Non-Flooded": "73% length",  # Przykładowa wartość "Road Non-Flooded"
+    "Road Flooded": "27% length",  # Przykładowa wartość "Road Flooded"
+}
+
+# Załadowanie obrazu
+image = Image.open(image_path)
+
+# Podziel stronę na dwie kolumny
+st.write("# Natural Distaster Analysis:")
+st.write(" ")
+left_column, _, right_column = st.columns([2, 1, 5])
+
+# W lewej kolumnie wyświetl informacje o właściwościach obrazu
+with left_column:
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+
+    st.write("### Image properties:")
+    st.dataframe(properties, column_config=None)
+
+    st.write(" ")
+    st.write(" ")
+
+    st.write("##### Black line shows the best route to get to the choosen building")
 
 
-if __name__ == "__main__":
-    main()
+# W prawej kolumnie wyświetl obraz
+with right_column:
+    st.write(" ")
+
+    st.image(image, width=700)
